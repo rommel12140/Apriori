@@ -17,12 +17,18 @@ public class Apriori {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
+      
       ArrayList transaction = new ArrayList();
       ArrayList<String> itemSet = new ArrayList();
       ArrayList<ArrayList<String>> itemSets = new ArrayList();
       int[] frequency = new int[20];
       int x = 0, total = 0;
       
+      
+      //===========================================================
+      //===========================================================
+      //===========================================================
+      //ADD DATA
       Transaction ta = new Transaction();
       ta.addTransaction("M");
       ta.addTransaction("O");
@@ -76,42 +82,66 @@ public class Apriori {
 
       transaction.add(tf.transObject());
       
+      //===========================================================
+      //===========================================================
+      //===========================================================
+      //ADD TRANSACTION TO DATABASE
       Database db =  new Database();
       db.addToDatabase(transaction);
       total = transaction.size();
       System.out.println("Number of Transactions:" + total);
+      
+      //===========================================================
+      //===========================================================
+      //===========================================================
+      //PROCESS THE ITEM SET SO THAT ALL CHARACTERS ARE PRESENT
+      //WITH THEIR FREQUENCIES
       
       ItemSet t = new ItemSet();
       t.processItemSet(transaction);
       itemSet = t.getItemSet();
       frequency = t.getItemFreq();
       
+      //===========================================================
+      //===========================================================
+      //ADD TO DATABASE
       //DISPLAY DATABASE
       db.addToDatabase(itemSet);
       db.display();
       //=================
       
+      //===========================================================
+      //===========================================================
+      //DISPOSE THOSE ITEMS LOWER THAN MINIMUM SUPPORT
       ItemDisposer disp = new ItemDisposer();
 
-      
       for(String itemData: itemSet){
             disp.ItemSupportChecker(itemData, frequency[x]);            
             x++;
       }
-      
+      //===========================================================
+      //===========================================================
+      //GET ITEMS FROM ITEMDISPOSER
       itemSet = disp.getItems();
+      
+      //===========================================================
+      //===========================================================
       db.addToDatabase(itemSet);
       db.display();
       
+      //===========================================================
+      //===========================================================
+      //CONCATINATE THE CHARACTERS
       Concatinate conc = new Concatinate();
       conc.concatinateItems(itemSet);
       itemSets.add(conc.getItems());
       for(ArrayList<String> h: itemSets){
             db.addToDatabase(h);
       }
-      
       db.display();
-      
+      //===========================================================
+      //===========================================================
+      //SECOND FUNCTION THAT COULD GIVE FREQUENCY OF ITEMSETS
       ItemSet t2 = new ItemSet();
       t2.processItemSet2(transaction,conc.getItems());
     }
@@ -287,7 +317,7 @@ class ItemSet {
             if(hehe!=null){
                 System.out.print("\n"+ hehe +": " + frequency[jkl]); 
                 jkl++;
-            }
+            }c
         }
     }
     
