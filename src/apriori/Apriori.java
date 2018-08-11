@@ -18,9 +18,8 @@ public class Apriori {
      */
     public static void main(String[] args) {
       
-      ArrayList transaction = new ArrayList();
-      ArrayList<String> itemSet = new ArrayList();
-      ArrayList<ArrayList<String>> itemSets = new ArrayList();
+      ArrayList<ArrayList<String>> transaction = new ArrayList();
+      ArrayList<ArrayList<String>> itemSet = new ArrayList();
       int[] frequency = new int[20];
       int x = 0, total = 0;
       
@@ -101,7 +100,7 @@ public class Apriori {
       t.processItemSet(transaction);
       itemSet = t.getItemSet();
       frequency = t.getItemFreq();
-      
+      System.out.println(frequency[0]);
       //===========================================================
       //===========================================================
       //ADD TO DATABASE
@@ -114,14 +113,14 @@ public class Apriori {
       //===========================================================
       //DISPOSE THOSE ITEMS LOWER THAN MINIMUM SUPPORT
       ItemDisposer disp = new ItemDisposer();
-
-      for(String itemData: itemSet){
-            disp.ItemSupportChecker(itemData, frequency[x]);            
-            x++;
-      }
+      disp.ItemSupportChecker(itemSet, frequency);
+//      for(String itemData: itemSet){
+//            disp.ItemSupportChecker(itemData, frequency[x]+1);            
+//            x++;
+//      }
       //===========================================================
       //===========================================================
-      //GET ITEMS FROM ITEMDISPOSER
+      //GET ITEMS FROM ITEMDISPOSER AND RELOCATE TO ITEMSET
       itemSet = disp.getItems();
       
       //===========================================================
@@ -129,22 +128,50 @@ public class Apriori {
       db.addToDatabase(itemSet);
       db.display();
       
-      //===========================================================
-      //===========================================================
-      //CONCATINATE THE CHARACTERS
-      Concatinate conc = new Concatinate();
-      conc.concatinateItems(itemSet);
-      itemSets.add(conc.getItems());
-      for(ArrayList<String> h: itemSets){
-            db.addToDatabase(h);
-      }
-      db.display();
-      //===========================================================
-      //===========================================================
-      //SECOND FUNCTION THAT COULD GIVE FREQUENCY OF ITEMSETS
-      ItemSet t2 = new ItemSet();
-      t2.processItemSet2(transaction,conc.getItems());
+      //THIS IS TO CHECK IF THE PROGRAM WILL END OR NOT
+      if(itemSet.size()>1){
+        //===========================================================
+        //===========================================================
+        //CONCATINATE THE CHARACTERS
+        Concatinate conc = new Concatinate();
+        conc.concatinateItems(itemSet);
+        itemSet=conc.getItems();
+        db.addToDatabase(itemSet);
+        db.display();
+        //===========================================================
+        //===========================================================
+        //SECOND FUNCTION THAT COULD GIVE FREQUENCY OF ITEMSETS
+        ItemSet t2 = new ItemSet();
+        t2.processItemSet2(transaction,itemSet);
+        
+        frequency = t2.getItemFreq();
+        //===========================================================
+        //===========================================================
+        //DISPOSE ITEMS AGAIN THAT ARE LOWER THAN THE MINIMUM SUPPORT
+        ItemDisposer disp2 = new ItemDisposer();
+        disp2.ItemSupportChecker(itemSet, frequency);            
+
+        //===========================================================
+        //===========================================================
+        //GET ITEMS FROM ITEMDISPOSER AND RELOCATE TO ITEMSET
+        itemSet = disp2.getItems();
+        
+        db.addToDatabase(itemSet);
+        db.display();
+
+        //===========================================================
+        //===========================================================
+        //CONCATINATE THE CHARACTERS
+        Concatinate conc2 = new Concatinate();
+        conc2.concatinateItems(itemSet);
+        itemSet=conc2.getItems();
+        db.addToDatabase(itemSet);
+        db.display();
+        }
     }
+    
+    
+    
 }
 
 //=============================================================================
@@ -174,17 +201,17 @@ class Transaction {
 //=============================================================================
 //=============================================================================
 class Database {
-    ArrayList<ArrayList> database = new ArrayList();
+    ArrayList<ArrayList<ArrayList<String>>> database = new ArrayList();
     
     Database(){
         
     }
     
-    public void addToDatabase(ArrayList<String> transaction){
+    public void addToDatabase(ArrayList<ArrayList<String>> transaction){
         database.add(transaction);
     }
     
-    public ArrayList<ArrayList> getDatabase(){
+    public ArrayList<ArrayList<ArrayList<String>>> getDatabase(){
         return database;
     }
     
@@ -205,7 +232,7 @@ class Database {
 //=============================================================================
 class ItemSet {
     
-    ArrayList<String> dataItem = new ArrayList();
+    ArrayList<ArrayList<String>> itemSet = new ArrayList();
     String[] index = new String[20];
     int[] frequency = new int[20];
     
@@ -214,61 +241,61 @@ class ItemSet {
         
     }
     
-    public ArrayList<String> getItemSet(){
-        return dataItem;
+    public ArrayList<ArrayList<String>> getItemSet(){
+        return itemSet;
     }
     
     public int[] getItemFreq(){
         return frequency;
     }
     
-    public void processItemSet(ArrayList<ArrayList> data){
+    public void processItemSet(ArrayList<ArrayList<String>> data){
         ArrayList<String>[] exData = new ArrayList[20];
         int i = 0;
         int j = 0; 
         
-        for(ArrayList d: data){ //Separates the array list to array of strings
-            exData[i] = d; // Puts to array of strings the separated array list
+            
+            
+        for(ArrayList e: data){
+            exData[i] = e; // Puts to array of strings the separated array list                
             for(String s: exData[i]){ //For every input of the array of strings
+                
+                ArrayList<String> dataItem = new ArrayList();
                 int comp = 0;
                 for(int compare = 0; compare<19; compare++){    
                     if(s == index[compare]){
                         comp ++;
+                        if(frequency[compare]==0)
+                            frequency[compare] = 1;
                         frequency[compare] += 1;
-                        //System.out.println(a[compare] + "==");
                     }
                 }
-                
+
                 if(comp == 0){
                     index[j] = s;
-                    
+
                     dataItem.add(s);
+                    itemSet.add(dataItem);
                     j++;
                 }
             }
-            i++;
-        }
+        i++;
+        } 
     }
     
-    public void processItemSet2(ArrayList<ArrayList> data1, ArrayList<ArrayList<String>> data2){
-        ArrayList<String>[] exData2 = new ArrayList[20];
+    public void processItemSet2(ArrayList<ArrayList<String>> data1, ArrayList<ArrayList<String>> data2){
         ArrayList<String>[] exData1 = new ArrayList[20];
-        ArrayList<String> newItemSet = new ArrayList();
-        int[] frequency = new int[20];
         int i = 0;
-        int j = 0;
         
         
         
         for(ArrayList<String> d: data2){ //Separates the array list to array of strings
-            
-            exData2[i] = d; // Puts to array of strings the separated array list
-//            System.out.println("\nCompare: " + exData2[i]);
-            boolean[] c = new boolean[20];
-            
-            int i2 = 0;
+                        int i2 = 0;
             int i3 = 0;
             int x = 0;
+            boolean[] c = new boolean[20];
+            
+
             
             for(String s1: d){
                 //int[] c = new int[20];
@@ -276,7 +303,6 @@ class ItemSet {
                 //Compare s1 with s2
                 for(ArrayList d2: data1){ //Separates the array list to array of strings
                     exData1[i2] = d2;
-                    int compare = 0;
 //                    System.out.print(exData1[i2]);
 //                    System.out.println(i2);
                     for(String s2: exData1[i2]){ //For every input of the array of strings
@@ -296,8 +322,6 @@ class ItemSet {
                             else{
                                 c[i2] = false;
                             }
-                        
-                        compare++;
                     }
                     
                     i2++;
@@ -312,13 +336,13 @@ class ItemSet {
             }
             i++;
         }
-        int jkl = 0;
-        for(ArrayList hehe: exData2){
-            if(hehe!=null){
-                System.out.print("\n"+ hehe +": " + frequency[jkl]); 
-                jkl++;
-            }c
-        }
+//        int jkl = 0;
+//        for(ArrayList hehe: exData2){
+//            if(hehe!=null){
+//                System.out.print("\n"+ hehe +": " + frequency[jkl]); 
+//                jkl++;
+//            }
+//        }
     }
     
     
@@ -327,18 +351,28 @@ class ItemSet {
 //=============================================================================
 //=============================================================================
 class ItemDisposer{
-    ArrayList<String> itemSet = new ArrayList();
+    ArrayList<ArrayList<String>> itemSet = new ArrayList();
     
     public ItemDisposer(){
         
     }
     
-    public void ItemSupportChecker(String data1, int data2){
-        if(data2+1 >= 3)
+    public void ItemSupportChecker(ArrayList<ArrayList<String>> data1, int[] data2){
+      int x =0;
+      for(ArrayList<String> itemData: data1){   
+            if(data2[x] >= 3)
+                itemSet.add(itemData);
+            x++;
+      }
+
+    }
+    
+    public void ItemSetSupportChecker(ArrayList<String> data1, int data2){
+        if(data2 >= 3)
             itemSet.add(data1);
     }
     
-    public ArrayList<String> getItems(){
+    public ArrayList getItems(){
         return itemSet;
     }
     
@@ -357,30 +391,37 @@ class Concatinate{
         
     }
     
-    public void concatinateItems(ArrayList<String> data){
-        int x = 0, i = 0;
-        for(String s: data){
-            item[i] = s;
-            
-            i++;
-        }
-        for(String s: data){
-            item[x] = s;
-            for(int y = x+1; y<data.size()+1; y++){
-                ArrayList<String> itemConc = new ArrayList();
-                if(item[y]!=null){
-                    itemConc.add(item[x]);
-                    itemConc.add(item[y]);
-                    itemSet.add(itemConc);     
-                }
-                
+    public void concatinateItems(ArrayList<ArrayList<String>> dataSet){
+        
+        int i = 0;
+        int x = 0;
+        for(ArrayList<String> data: dataSet){
+            for(String s: data){
+                item[i] = s;
+                i++;
             }
-            
-            x++;  
         }
+        for(ArrayList<String> data: dataSet){
+            for(String s: data){
+                System.out.println(s);
+                for(int y = x+1; y<dataSet.size()+1; y++){
+                    ArrayList<String> itemConc = new ArrayList();
+                    if(item[y]!=null){
+                        itemConc.add(item[x]);
+                        itemConc.add(item[y]);
+                        itemSet.add(itemConc);     
+                    }
+
+                }
+
+                 x++;
+            }
+        }   
+
+        
     }
     
-    public ArrayList getItems(){
+    public ArrayList<ArrayList<String>> getItems(){
         return itemSet;
     }
     
