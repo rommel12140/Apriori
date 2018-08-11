@@ -367,11 +367,6 @@ class ItemDisposer{
 
     }
     
-    public void ItemSetSupportChecker(ArrayList<String> data1, int data2){
-        if(data2 >= 3)
-            itemSet.add(data1);
-    }
-    
     public ArrayList getItems(){
         return itemSet;
     }
